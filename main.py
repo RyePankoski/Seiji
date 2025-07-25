@@ -1,5 +1,6 @@
 from movement_patterns import get_valid_moves, get_valid_placement_squares
 from draw import MenuDrawUtilities, GameDrawUtilities, DrawUtilities
+from sound_manager import SoundManager
 from reserve_manager import ReserveManager
 from display_manager import DisplayManager
 from network_manager import NetworkManager
@@ -18,17 +19,7 @@ class Game:
         mixer.init()
         pygame.init()
         pygame.display.set_caption("Seiji")
-
-        # Sound Objects
-        self.place_sound = pygame.mixer.Sound("Sounds/place_sound.mp3")
-        self.slide_sound = pygame.mixer.Sound("Sounds/slide_sound.mp3")
-        self.pick_up_sound = pygame.mixer.Sound("Sounds/pick_up.mp3")
-        self.capture_sound = pygame.mixer.Sound("Sounds/capture.mp3")
-        self.promote_sound = pygame.mixer.Sound("Sounds/promote.mp3")
-        self.endgame_sound = pygame.mixer.Sound("Sounds/endgame.mp3")
-        self.select_piece_sound = pygame.mixer.Sound("Sounds/advisor.mp3")
-        self.de_select_sound = pygame.mixer.Sound("Sounds/de-select.mp3")
-        self.enemy_select_sound = pygame.mixer.Sound("Sounds/enemy_select.mp3")
+        SoundManager()
 
         # Game Objects/Managers
         self.clock = pygame.time.Clock()
@@ -112,7 +103,7 @@ class Game:
                     player = self.selected_reserve_piece.owner
                     piece_index = self.reserve_manager.get_pieces(player).index(self.selected_reserve_piece)
                     self.reserve_manager.remove_piece(player, piece_index)
-                    self.place_sound.play()
+                    SoundManager.play_sound('place')
 
                     if self.selected_reserve_piece.name == "monarch":
                         self.monarchs_placed[player] = True
@@ -151,13 +142,13 @@ class Game:
                 captured_piece.owner = self.current_player  # Change the owner to the capturing player
                 # Finally place the capturing piece
                 self.board.place_piece(self.selected_piece, board_pos)
-                self.capture_sound.play()
+                SoundManager.play_sound('capture')
 
                 self.game_ui.add_to_log(f"Player {self.current_player} captured {self.selected_piece.name} at "
                                         f"{x + 1, BOARD_SIZE - y}")
 
                 if clicked_piece_inside.name == "monarch":
-                    self.endgame_sound.play()
+                    SoundManager.play_sound('endgame')
                     self.current_state = "post_game"
 
                     if self.current_player == PLAYER_1:
@@ -175,7 +166,7 @@ class Game:
                 self.game_ui.add_to_log(f"Player {self.current_player} moved {self.selected_piece.name} to "
                                         f"{x + 1, BOARD_SIZE - y}")
 
-                self.slide_sound.play()
+                SoundManager.play_sound('slide')
                 self.finish_and_send_game_state()
 
             self.deselect()
@@ -187,7 +178,7 @@ class Game:
             if not clicked_piece_inside:
                 self.selected_piece = None
                 self.valid_moves = []
-                self.de_select_sound.play()
+                SoundManager.play_sound('de_select')
                 return
 
             if self.selected_piece == clicked_piece_inside:
@@ -199,9 +190,9 @@ class Game:
             self.valid_moves = get_valid_moves(clicked_piece_inside, board_pos[0], board_pos[1], self.board)
 
             if clicked_piece_inside.owner == self.current_player:
-                self.select_piece_sound.play()
+                SoundManager.play_sound('select_piece')
             else:
-                self.enemy_select_sound.play()
+                SoundManager.play_sound('enemy_select')
 
         top_board_pos = self.board.get_board_position(pos, self.display)
         top_center = self.board.size // 2
@@ -213,11 +204,10 @@ class Game:
             _handle_board_interaction(top_board_pos, clicked_piece)
 
     def deselect(self):
-        """Handle piece deselection and cleanup"""
         self.selected_piece = None
         self.valid_moves = []
         self.valid_placement_squares = []
-        self.de_select_sound.play()
+        SoundManager.play_sound('de_select')
 
     def handle_reserve_click(self, pos):
         self.valid_moves = []
@@ -240,7 +230,7 @@ class Game:
             return
 
         if piece is not None:
-            self.pick_up_sound.play()
+            SoundManager.play_sound('pick_up')
             self.selected_reserve_piece = piece
             self.reserved_piece_selected = True
             self.valid_placement_squares = get_valid_placement_squares(self.board, piece)
@@ -278,7 +268,7 @@ class Game:
                     reserve_pos = self.reserve_manager.is_click_in_reserve(self.current_player, event.pos, self.display)
 
                     if ui_action == "resign":
-                        self.endgame_sound.play()
+                        SoundManager.play_sound('endgame')
                         self.current_state = "post_game"
 
                         if self.current_player == PLAYER_1:
@@ -343,8 +333,6 @@ class Game:
             self.handle_states()
             pygame.display.flip()
             self.clock.tick(FPS)
-            #hello
-
 
 
 if __name__ == "__main__":

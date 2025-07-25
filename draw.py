@@ -16,12 +16,6 @@ class DrawUtilities:
         self.display_manager = display_manager
         self.board = Board
 
-    def draw(self, screen):
-        pass
-
-    def handle_resize(self):
-        pass
-
     def fade_to_black(self, screen, speed=5):
         """Create a fade to black transition effect"""
         fade_surface = pygame.Surface((BASE_WINDOW_WIDTH, BASE_WINDOW_HEIGHT))
@@ -203,8 +197,8 @@ class GameDrawUtilities:
         self.starfield = MenuStarfield(current_width, current_height, self.starfield_config)
         self.board_texture = pygame.image.load("Textures/background.png")
         self.board_texture = pygame.transform.scale(self.board_texture,
-                                                    (BOARD_SIZE * BASE_CELL_SIZE,
-                                                     BOARD_SIZE * BASE_CELL_SIZE))
+                                                    (self.board.size * BASE_CELL_SIZE,
+                                                     self.board.size * BASE_CELL_SIZE))
         self.table_texture = pygame.image.load("Textures/tables.png").convert_alpha()
 
     def draw(self, screen, valid_placements, valid_moves=None, game_phase="playing"):
@@ -336,13 +330,13 @@ class GameDrawUtilities:
         """Draw a red highlight on the center square"""
         current_width, current_height = self.display_manager.get_dimensions()
         desired_board_height = current_height * 0.8
-        cell_size = desired_board_height / BOARD_SIZE
-        board_pixels = BOARD_SIZE * cell_size
+        cell_size = desired_board_height / self.board.size
+        board_pixels = self.board.size * cell_size
         grid_rect = pygame.Rect(0, 0, board_pixels, board_pixels)
         grid_rect.center = (current_width // 2, current_height // 2)
 
         # Calculate center square position
-        center = BOARD_SIZE // 2
+        center = self.board.size // 2
         center_x = grid_rect.left + center * cell_size
         center_y = grid_rect.top + center * cell_size
 
@@ -355,8 +349,8 @@ class GameDrawUtilities:
         """Draw highlights for valid moves or placements"""
         current_width, current_height = self.display_manager.get_dimensions()
         desired_board_height = current_height * 0.8
-        cell_size = desired_board_height / BOARD_SIZE
-        board_pixels = BOARD_SIZE * cell_size
+        cell_size = desired_board_height / self.board.size
+        board_pixels = self.board.size * cell_size
         grid_rect = pygame.Rect(0, 0, board_pixels, board_pixels)
         grid_rect.center = (current_width // 2, current_height // 2)
 
@@ -383,8 +377,8 @@ class GameDrawUtilities:
     def draw_board(self, screen):
         current_width, current_height = self.display_manager.get_dimensions()
         desired_board_height = current_height * 0.8
-        cell_size = desired_board_height / BOARD_SIZE
-        board_pixels = BOARD_SIZE * cell_size
+        cell_size = desired_board_height / self.board.size
+        board_pixels = self.board.size * cell_size
         grid_rect = pygame.Rect(0, 0, board_pixels, board_pixels)
         grid_rect.center = (current_width // 2, current_height // 2)
 
@@ -402,8 +396,8 @@ class GameDrawUtilities:
         """Draw all pieces currently on the board"""
         current_width, current_height = self.display_manager.get_dimensions()
         desired_board_height = current_height * 0.8
-        cell_size = desired_board_height / BOARD_SIZE
-        board_pixels = BOARD_SIZE * cell_size
+        cell_size = desired_board_height / self.board.size
+        board_pixels = self.board.size * cell_size
         grid_rect = pygame.Rect(0, 0, board_pixels, board_pixels)
         grid_rect.center = (current_width // 2, current_height // 2)
 
@@ -429,8 +423,8 @@ class GameDrawUtilities:
     def draw_reserve_tables(self, screen):
         current_width, current_height = self.display_manager.get_dimensions()
         desired_board_height = current_height * 0.8
-        cell_size = desired_board_height / BOARD_SIZE
-        board_pixels = BOARD_SIZE * cell_size
+        cell_size = desired_board_height / self.board.size
+        board_pixels = self.board.size * cell_size
         grid_rect = pygame.Rect(0, 0, board_pixels, board_pixels)
         grid_rect.center = (current_width // 2, current_height // 2)
 
@@ -460,7 +454,7 @@ class GameDrawUtilities:
                           grid_rect.height + border_width))
 
     def _draw_grid_lines(self, screen, grid_rect, cell_size):
-        for i in range(BOARD_SIZE + 1):
+        for i in range(self.board.size + 1):
             x = grid_rect.left + i * cell_size
             pygame.draw.line(screen, GRID_COLOR,
                              (x, grid_rect.top),
@@ -472,8 +466,8 @@ class GameDrawUtilities:
                              (grid_rect.right, y))
 
     def _draw_center_x(self, screen, grid_rect, cell_size):
-        center_x = grid_rect.left + (BOARD_SIZE // 2) * cell_size
-        center_y = grid_rect.top + (BOARD_SIZE // 2) * cell_size
+        center_x = grid_rect.left + (self.board.size // 2) * cell_size
+        center_y = grid_rect.top + (self.board.size // 2) * cell_size
         pygame.draw.line(screen, GRID_COLOR,
                          (center_x, center_y),
                          (center_x + cell_size, center_y + cell_size),
@@ -487,14 +481,14 @@ class GameDrawUtilities:
         font = pygame.font.Font(None, int(cell_size * 0.5))
         padding = cell_size * 0.3
 
-        for i in range(BOARD_SIZE):
+        for i in range(self.board.size):
             bottom_number = str(i + 1)
             text = font.render(bottom_number, True, GOLD)
             x = grid_rect.left + (i * cell_size) + (cell_size - text.get_width()) // 2
             y = grid_rect.bottom + padding
             screen.blit(text, (x, y))
 
-            left_number = str(BOARD_SIZE - i)
+            left_number = str(self.board.size - i)
             text = font.render(left_number, True, GOLD)
             x = grid_rect.left - padding - text.get_width()
             y = grid_rect.top + (i * cell_size) + (cell_size - text.get_height()) // 2
@@ -521,8 +515,8 @@ class GameDrawUtilities:
     def draw_reserve_pieces(self, screen, reserve_manager, selected_piece=None):
         current_width, current_height = self.display_manager.get_dimensions()
         desired_board_height = current_height * 0.8
-        cell_size = desired_board_height / BOARD_SIZE
-        board_pixels = BOARD_SIZE * cell_size
+        cell_size = desired_board_height / self.board.size
+        board_pixels = self.board.size * cell_size
         grid_rect = pygame.Rect(0, 0, board_pixels, board_pixels)
         grid_rect.center = (current_width // 2, current_height // 2)
 

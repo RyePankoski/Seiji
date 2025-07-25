@@ -88,7 +88,7 @@ class Menu:
                     try:
                         board_size = int(self.board_size_input)
                         if 4 <= board_size <= 16:  # Validate board size
-                            self.game.board.size = board_size
+                            self.game.board.resize_board(board_size)
                             self.show_setup_dialog = False
                             self.setup_confirmed = True
                             self.draw.fade_to_black(self.display_manager.get_screen())
@@ -116,7 +116,7 @@ class Menu:
             try:
                 board_size = int(self.board_size_input)
                 if 4 <= board_size <= 19:
-                    self.game.board.size = board_size
+                    self.game.board.resize_board(board_size)
                     self.show_setup_dialog = False
                     self.setup_confirmed = True
                     self.draw.fade_to_black(self.display_manager.get_screen())

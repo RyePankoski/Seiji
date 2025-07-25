@@ -1,12 +1,13 @@
 import pygame
+from sound_manager import SoundManager
 
 
 class Board:
     def __init__(self, size, game):
+        SoundManager()
         self.game = game
         self.size = size
         self.board = [[None for x in range(size)] for y in range(size)]
-        self.promote_sound = pygame.mixer.Sound("Sounds/promote.mp3")
         self.i_promoted = False
 
     def get_size(self) -> int:
@@ -78,7 +79,7 @@ class Board:
 
                 # Only promote if there are friendly pieces, no enemy pieces, and no friendly palace
                 if has_only_friendly_adjacent and has_any_friendly_adjacent and not has_friendly_palace:
-                    self.promote_sound.play()
+                    SoundManager.play_sound('promote')
                     self.i_promoted = True
                     piece.promoted = True
                     piece.movement_squares = ((2, 2), (2, -2), (-2, 2), (-2, -2), (0, 2), (0, -2), (2, 0), (-2, 0),
@@ -87,19 +88,19 @@ class Board:
                 has_friendly_monarch = any(
                     p.name == "monarch" and p.owner == piece.owner for p in adjacent_pieces.values())
                 if has_friendly_monarch:
-                    self.promote_sound.play()
+                    SoundManager.play_sound('promote')
                     self.i_promoted = True
                     piece.promoted = True
                     piece.movement_squares = ((2, 2), (2, -2), (-2, 2), (-2, -2), (0, 2), (0, -2), (2, 0), (-2, 0),
                                               (0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1))
             elif piece.name == "official":
                 if any(p.name == "monarch" and p.owner == piece.owner for p in adjacent_pieces.values()):
-                    self.promote_sound.play()
+                    SoundManager.play_sound('promote')
                     self.i_promoted = True
                     piece.promoted = True
                     piece.movement_squares = ((0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1))
                 elif any(p.name == "advisor" and p.owner == piece.owner for p in adjacent_pieces.values()):
-                    self.promote_sound.play()
+                    SoundManager.play_sound('promote')
                     self.i_promoted = True
 
                     piece.promoted = True
@@ -180,3 +181,8 @@ class Board:
         grid_rect = pygame.Rect(0, 0, board_pixels, board_pixels)
         grid_rect.center = (current_width // 2, current_height // 2)
         return grid_rect, cell_size
+
+    def resize_board(self, new_size):
+        """Resize the board and recreate the array"""
+        self.size = new_size
+        self.board = [[None for x in range(new_size)] for y in range(new_size)]
