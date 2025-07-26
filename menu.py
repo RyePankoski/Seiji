@@ -35,7 +35,7 @@ class Menu:
         self.settings_font = pygame.font.Font("Fonts/general_text.ttf", 36)
 
         # Volume settings (0.0 to 1.0)
-        self.music_volume = 0.7
+        self.music_volume = 0.3
         self.sound_volume = 0.7
 
         # Slider dimensions
@@ -159,6 +159,7 @@ class Menu:
                     self.setup_confirmed = True
                     self.draw.fade_to_black(self.display_manager.get_screen())
                     self.game.current_state = "game"
+                    SoundManager.choose_random_ambience(force=True)
             except ValueError:
                 self.board_size_input = "9"
         elif not self.setup_dialog_rect.collidepoint(pos):

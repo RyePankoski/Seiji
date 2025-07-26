@@ -1,5 +1,8 @@
+import random
 import pygame
 from pygame import mixer
+import pygame.sndarray as sndarray
+import numpy as np
 
 
 class SoundManager:
@@ -35,10 +38,29 @@ class SoundManager:
             SoundManager._initialized = True
 
     @classmethod
-    def play_sound(cls, sound_name):
-        instance = cls()
+    def get_instance(cls):
+        if cls._instance is None:
+            cls._instance = cls()
+        return cls._instance
+
+    @classmethod
+    def play_sound(cls, sound_name, pitch_variation=0.1):
+        instance = cls.get_instance()
         if sound_name in instance.sounds:
-            instance.sounds[sound_name].play()
+            sound = instance.sounds[sound_name]
+
+            sound_array = sndarray.array(sound).copy()
+            pitch_factor = 1.0 + random.uniform(-pitch_variation, pitch_variation)
+
+            print(f"Playing {sound_name} with pitch factor: {pitch_factor}")
+
+            original_length = len(sound_array)
+            new_length = int(original_length / pitch_factor)
+            indices = np.linspace(0, original_length - 1, new_length).astype(int)
+            resampled_array = sound_array[indices]
+
+            modified_sound = sndarray.make_sound(resampled_array)
+            modified_sound.play(loops=0)  # Ensure it's not looping
         else:
             print(f"Warning: Sound '{sound_name}' not found")
 

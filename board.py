@@ -79,8 +79,9 @@ class Board:
 
                 # Only promote if there are friendly pieces, no enemy pieces, and no friendly palace
                 if has_only_friendly_adjacent and has_any_friendly_adjacent and not has_friendly_palace:
-                    SoundManager.play_sound('promote')
-                    self.i_promoted = True
+                    if not self.i_promoted:  # Only play sound once per turn
+                        SoundManager.play_sound('promote')
+                        self.i_promoted = True
                     piece.promoted = True
                     piece.movement_squares = ((2, 2), (2, -2), (-2, 2), (-2, -2), (0, 2), (0, -2), (2, 0), (-2, 0),
                                               (0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1))
@@ -88,21 +89,23 @@ class Board:
                 has_friendly_monarch = any(
                     p.name == "monarch" and p.owner == piece.owner for p in adjacent_pieces.values())
                 if has_friendly_monarch:
-                    SoundManager.play_sound('promote')
-                    self.i_promoted = True
+                    if not self.i_promoted:  # Only play sound once per turn
+                        SoundManager.play_sound('promote')
+                        self.i_promoted = True
                     piece.promoted = True
                     piece.movement_squares = ((2, 2), (2, -2), (-2, 2), (-2, -2), (0, 2), (0, -2), (2, 0), (-2, 0),
                                               (0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1))
             elif piece.name == "official":
                 if any(p.name == "monarch" and p.owner == piece.owner for p in adjacent_pieces.values()):
-                    SoundManager.play_sound('promote')
-                    self.i_promoted = True
+                    if not self.i_promoted:  # Only play sound once per turn
+                        SoundManager.play_sound('promote')
+                        self.i_promoted = True
                     piece.promoted = True
                     piece.movement_squares = ((0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1))
                 elif any(p.name == "advisor" and p.owner == piece.owner for p in adjacent_pieces.values()):
-                    SoundManager.play_sound('promote')
-                    self.i_promoted = True
-
+                    if not self.i_promoted:  # Only play sound once per turn
+                        SoundManager.play_sound('promote')
+                        self.i_promoted = True
                     piece.promoted = True
                     piece.movement_squares = ((0, 1), (0, -1), (1, 0), (-1, 0), (0, 2), (0, -2), (2, 0), (-2, 0))
 
