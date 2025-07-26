@@ -29,7 +29,6 @@ class SoundManager:
 
     @classmethod
     def play_sound(cls, sound_name):
-        """Play a sound effect by name"""
         instance = cls()
         if sound_name in instance.sounds:
             instance.sounds[sound_name].play()
@@ -38,7 +37,6 @@ class SoundManager:
 
     @classmethod
     def handle_music_transition(cls, new_track, fadeout_time=1000):
-        """Handle smooth music transitions with fadeout"""
         instance = cls()
         if new_track == instance.current_music:  # Skip if same track
             return
@@ -52,19 +50,16 @@ class SoundManager:
 
     @classmethod
     def stop_music(cls):
-        """Stop current music"""
         instance = cls()
         mixer.music.stop()
         instance.current_music = None
 
     @classmethod
     def set_music_volume(cls, volume):
-        """Set music volume (0.0 to 1.0)"""
         mixer.music.set_volume(volume)
 
     @classmethod
     def set_sound_volume(cls, volume):
-        """Set sound effects volume (0.0 to 1.0)"""
         instance = cls()
         for sound in instance.sounds.values():
             sound.set_volume(volume)

@@ -3,7 +3,7 @@ from sound_manager import SoundManager
 from constants import *
 
 
-class BoardHandler:
+class GameActionHandler:
     def __init__(self, board, reserve_manager, game_ui, display):
         self.board = board
         self.reserve_manager = reserve_manager
@@ -32,6 +32,7 @@ class BoardHandler:
         }
 
         def _handle_reserve_placement(board_pos, center):
+
             if selected_reserve_piece is None:
                 return
 
@@ -54,7 +55,8 @@ class BoardHandler:
             if self.board.place_piece(selected_reserve_piece, board_pos):
                 x, y = board_pos
                 result[
-                    'log_message'] = f"Player {current_player} placed a {selected_reserve_piece.name} at {x + 1, BOARD_SIZE - y}"
+                    'log_message'] = (f"Player {current_player} placed a {selected_reserve_piece.name} at "
+                                      f"{x + 1, self.board.size - y}")
 
                 player = selected_reserve_piece.owner
                 piece_index = self.reserve_manager.get_pieces(player).index(selected_reserve_piece)
@@ -105,7 +107,7 @@ class BoardHandler:
                     'log_message'] = f"Player {current_player} captured {selected_piece.name} at {x + 1, BOARD_SIZE - y}"
 
                 if clicked_piece_inside.name == "monarch":
-                    result['sound_to_play'] = 'endgame'  # This will be overridden by main class
+                    result['sound_to_play'] = 'endgame'
                     result['game_ended'] = True
                     result['winner'] = PLAYER_1 if current_player == PLAYER_2 else PLAYER_2
                 else:

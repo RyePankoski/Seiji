@@ -7,6 +7,10 @@ from network_manager import NetworkManager
 
 class Menu:
     def __init__(self, game, display_manager):
+        self.confirm_button_rect = None
+        self.setup_dialog_rect = None
+        self.buttons = None
+        self.button_borders = None
         self.display_manager = display_manager
         self.game = game
         self.show_ip_dialog = False
@@ -21,7 +25,6 @@ class Menu:
         self.setup_confirmed = False
 
     def create_buttons(self):
-        """Create menu buttons with their positions and text"""
         current_width, current_height = self.display_manager.get_dimensions()
 
         # Button dimensions
@@ -82,7 +85,9 @@ class Menu:
         )
 
     def handle_event(self, event):
+        
         if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            
             if self.show_setup_dialog:
                 if self.confirm_button_rect.collidepoint(event.pos):
                     try:

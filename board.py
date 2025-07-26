@@ -110,14 +110,16 @@ class Board:
         self.i_promoted = False
         for y in range(self.size):
             for x in range(self.size):
-                current_piece = self.get_piece((x, y))
-                if current_piece is not None:
-                    adjacent_pieces = self.get_adjacent_pieces((x, y))
-                    if adjacent_pieces is not None:
-                        self.handle_status(current_piece, adjacent_pieces)
+                self._check_piece_at_position(x, y)
+
+    def _check_piece_at_position(self, x, y):
+        current_piece = self.get_piece((x, y))
+        if current_piece is not None:
+            adjacent_pieces = self.get_adjacent_pieces((x, y))
+            if adjacent_pieces is not None:
+                self.handle_status(current_piece, adjacent_pieces)
 
     def get_board_position(self, mouse_pos, display_manager):
-        """Convert screen coordinates to board position"""
         current_width, current_height = display_manager.get_dimensions()
         desired_board_height = current_height * 0.8
         cell_size = desired_board_height / self.size

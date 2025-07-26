@@ -2,6 +2,7 @@ import random
 import pygame
 from constants import *
 
+
 class StarPoint:
     def __init__(self, center_x, center_y, star_color, min_speed=0.1, max_size=10, growth_rate=150):
         # Create spawn area
