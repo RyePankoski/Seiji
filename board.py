@@ -74,8 +74,8 @@ class Board:
                 # Check for adjacent friendly pieces (excluding enemy pieces) and no friendly palaces
                 has_only_friendly_adjacent = all(p.owner == piece.owner for p in adjacent_pieces.values())
                 has_any_friendly_adjacent = any(p.owner == piece.owner for p in adjacent_pieces.values())
-                has_friendly_palace = any(
-                    p.name == "palace" and p.owner == piece.owner for p in adjacent_pieces.values())
+                has_friendly_palace = any(p.name == "palace" and p.owner == piece.owner for p
+                                          in adjacent_pieces.values())
 
                 # Only promote if there are friendly pieces, no enemy pieces, and no friendly palace
                 if has_only_friendly_adjacent and has_any_friendly_adjacent and not has_friendly_palace:

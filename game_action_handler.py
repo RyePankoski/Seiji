@@ -160,3 +160,52 @@ class GameActionHandler:
             _handle_board_interaction(top_board_pos, clicked_piece)
 
         return result
+
+    def handle_reserve_click(self, pos, current_player, selected_reserve_piece, reserved_piece_selected):
+        from movement_patterns import get_valid_placement_squares
+
+        result = {
+            'action_taken': False,
+            'new_selected_reserve_piece': selected_reserve_piece,
+            'new_reserved_piece_selected': reserved_piece_selected,
+            'new_valid_moves': [],
+            'new_valid_placement_squares': [],
+            'sound_to_play': None
+        }
+
+        dimensions = self.display.get_dimensions()
+        current_width, current_height = dimensions
+        click_x, click_y = pos
+
+        piece = self.reserve_manager.get_piece_at_position(
+            current_player,
+            click_x,
+            click_y,
+            current_width,
+            current_height
+        )
+
+        # If clicking the same piece that's already selected, deselect it
+        if reserved_piece_selected and piece == selected_reserve_piece:
+            result['new_selected_reserve_piece'] = None
+            result['new_reserved_piece_selected'] = False
+            result['new_valid_placement_squares'] = []
+            result['sound_to_play'] = 'de_select'
+            result['action_taken'] = True
+            return result
+
+        # If a piece was clicked, select it
+        if piece is not None:
+            result['new_selected_reserve_piece'] = piece
+            result['new_reserved_piece_selected'] = True
+            result['new_valid_placement_squares'] = get_valid_placement_squares(self.board, piece)
+            result['sound_to_play'] = 'pick_up'
+            result['action_taken'] = True
+        else:
+            # Clicked empty space, deselect
+            result['new_selected_reserve_piece'] = None
+            result['new_reserved_piece_selected'] = False
+            result['new_valid_placement_squares'] = []
+            result['action_taken'] = True
+
+        return result
