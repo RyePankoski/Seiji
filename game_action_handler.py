@@ -41,6 +41,7 @@ class GameActionHandler:
 
             if game_phase == "monarch_placement":
                 if not selected_reserve_piece.name == "monarch":
+                    SoundManager.play_sound('error')
                     return
                 if board_pos[0] == center and board_pos[1] == center:
                     return
@@ -141,6 +142,7 @@ class GameActionHandler:
                 return
 
             result['new_selected_piece'] = clicked_piece_inside
+
             result['new_valid_moves'] = get_valid_moves(clicked_piece_inside, board_pos[0], board_pos[1], self.board)
             result['action_taken'] = True
 
@@ -185,7 +187,6 @@ class GameActionHandler:
             current_height
         )
 
-        # If clicking the same piece that's already selected, deselect it
         if reserved_piece_selected and piece == selected_reserve_piece:
             result['new_selected_reserve_piece'] = None
             result['new_reserved_piece_selected'] = False

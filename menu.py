@@ -2,11 +2,13 @@ import pygame
 import threading
 from draw import DrawUtilities
 from server import GameServer
-from network_manager import NetworkManager
+from sound_manager import SoundManager
 
 
 class Menu:
     def __init__(self, game, display_manager):
+        SoundManager()
+
         self.confirm_button_rect = None
         self.setup_dialog_rect = None
         self.buttons = None
@@ -23,6 +25,27 @@ class Menu:
         self.server_thread = None
         self.draw = DrawUtilities(self.display_manager)
         self.setup_confirmed = False
+
+        self.show_rules = False  # Add this line
+        self.rules_image = pygame.image.load("Images/Rules.png")
+        self.rules_scroll_y = 0  # Add scroll position
+        self.rules_scroll_speed = 30
+
+        self.show_settings = False
+        self.settings_font = pygame.font.Font("Fonts/general_text.ttf", 36)
+
+        # Volume settings (0.0 to 1.0)
+        self.music_volume = 0.7
+        self.sound_volume = 0.7
+
+        # Slider dimensions
+        self.slider_width = 300
+        self.slider_height = 20
+        self.slider_handle_width = 20
+
+        # Dragging state
+        self.dragging_music = False
+        self.dragging_sound = False
 
     def create_buttons(self):
         current_width, current_height = self.display_manager.get_dimensions()
@@ -43,6 +66,7 @@ class Menu:
             "Play Local",
             "Join Game",
             "Host Game",
+            "How To Play",
             "Settings",
             "Exit"
         ]
@@ -85,36 +109,60 @@ class Menu:
         )
 
     def handle_event(self, event):
-        
-        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-            
-            if self.show_setup_dialog:
-                if self.confirm_button_rect.collidepoint(event.pos):
-                    try:
-                        board_size = int(self.board_size_input)
-                        if 4 <= board_size <= 16:  # Validate board size
-                            self.game.board.resize_board(board_size)
-                            self.show_setup_dialog = False
-                            self.setup_confirmed = True
-                            self.draw.fade_to_black(self.display_manager.get_screen())
-                            self.game.current_state = "game"
-                    except ValueError:
-                        self.board_size_input = "9"  # Reset to default if invalid
-                elif not self.setup_dialog_rect.collidepoint(event.pos):
-                    self.show_setup_dialog = False
-            elif self.show_ip_dialog:
-                self.show_ip_dialog = False
-            else:
-                self.handle_menu_click(event.pos)
+        if event.type == pygame.VIDEORESIZE:
+            self.create_buttons()
+            return
 
-        elif event.type == pygame.KEYDOWN:
+        if event.type == pygame.KEYDOWN:
             if self.show_setup_dialog:
                 self.handle_setup_input(event)
             elif self.show_ip_dialog:
                 self.handle_ip_input(event)
+            return
 
-        elif event.type == pygame.VIDEORESIZE:
-            self.create_buttons()
+        # Handle scrolling when rules are open
+        if event.type == pygame.MOUSEWHEEL and self.show_rules:
+            self.rules_scroll_y -= event.y * self.rules_scroll_speed
+            return
+
+        if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if self.show_setup_dialog:
+                self._handle_setup_dialog_click(event.pos)
+            elif self.show_ip_dialog:
+                self.show_ip_dialog = False
+            elif self.show_rules:
+                self.show_rules = False
+                self.rules_scroll_y = 0
+            elif self.show_settings:
+                self._handle_settings_click(event.pos)
+            else:
+                self.handle_menu_click(event.pos)
+            return
+
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            if self.show_settings:
+                self.dragging_music = False
+                self.dragging_sound = False
+            return
+
+        if event.type == pygame.MOUSEMOTION and self.show_settings:
+            self._handle_settings_drag(event.pos)
+            return
+
+    def _handle_setup_dialog_click(self, pos):
+        if self.confirm_button_rect.collidepoint(pos):
+            try:
+                board_size = int(self.board_size_input)
+                if 4 <= board_size <= 16:
+                    self.game.board.resize_board(board_size)
+                    self.show_setup_dialog = False
+                    self.setup_confirmed = True
+                    self.draw.fade_to_black(self.display_manager.get_screen())
+                    self.game.current_state = "game"
+            except ValueError:
+                self.board_size_input = "9"
+        elif not self.setup_dialog_rect.collidepoint(pos):
+            self.show_setup_dialog = False
 
     def handle_setup_input(self, event):
         if event.key == pygame.K_RETURN:
@@ -139,13 +187,22 @@ class Menu:
         for i, (button_rect, text) in enumerate(self.buttons):
             if button_rect.collidepoint(pos):
                 if text == "Play Local":
+                    SoundManager.play_sound('play')
                     self.show_setup_dialog = True
                 elif text == "Join Game":
+                    SoundManager.play_sound('join_game')
                     self.show_ip_dialog = True
+                elif text == "How To Play":
+                    SoundManager.play_sound('how_to_play')
+                    self.show_rules = not self.show_rules
+                elif text == "Settings":
+                    SoundManager.play_sound('settings')
+                    self.show_settings = not self.show_settings  # Add this
                 elif text == "Exit":
                     pygame.quit()
                     exit()
                 elif text == "Host Game":
+                    SoundManager.play_sound('host_game')
                     if not hasattr(self, 'server') or self.server is None:
                         self.server = GameServer()
                         self.server_thread = threading.Thread(target=self.server.start)
@@ -167,4 +224,63 @@ class Menu:
             self.show_ip_dialog = False
         elif event.unicode in "0123456789.":
             self.ip_input += event.unicode
+
+    def _handle_settings_click(self, pos):
+        current_width, current_height = self.display_manager.get_dimensions()
+
+        # Settings dialog dimensions
+        dialog_width = 500
+        dialog_height = 400
+        dialog_x = (current_width - dialog_width) // 2
+        dialog_y = (current_height - dialog_height) // 2
+
+        # Check if clicking outside settings dialog
+        settings_rect = pygame.Rect(dialog_x, dialog_y, dialog_width, dialog_height)
+        if not settings_rect.collidepoint(pos):
+            self.show_settings = False
+            return
+
+        # Music slider
+        music_slider_x = dialog_x + 50
+        music_slider_y = dialog_y + 120
+        music_slider_rect = pygame.Rect(music_slider_x, music_slider_y, self.slider_width, self.slider_height)
+
+        if music_slider_rect.collidepoint(pos):
+            self.dragging_music = True
+            # Set volume based on click position
+            relative_x = pos[0] - music_slider_x
+            self.music_volume = max(0.0, min(1.0, relative_x / self.slider_width))
+            SoundManager.set_music_volume(self.music_volume)
+
+        # Sound slider
+        sound_slider_x = dialog_x + 50
+        sound_slider_y = dialog_y + 220
+        sound_slider_rect = pygame.Rect(sound_slider_x, sound_slider_y, self.slider_width, self.slider_height)
+
+        if sound_slider_rect.collidepoint(pos):
+            self.dragging_sound = True
+            relative_x = pos[0] - sound_slider_x
+            self.sound_volume = max(0.0, min(1.0, relative_x / self.slider_width))
+            SoundManager.set_sound_volume(self.sound_volume)
+
+    def _handle_settings_drag(self, pos):
+        """Handle dragging sliders"""
+        current_width, current_height = self.display_manager.get_dimensions()
+
+        dialog_width = 500
+        dialog_height = 400
+        dialog_x = (current_width - dialog_width) // 2
+        dialog_y = (current_height - dialog_height) // 2
+
+        if self.dragging_music:
+            music_slider_x = dialog_x + 50
+            relative_x = pos[0] - music_slider_x
+            self.music_volume = max(0.0, min(1.0, relative_x / self.slider_width))
+            SoundManager.set_music_volume(self.music_volume)
+
+        if self.dragging_sound:
+            sound_slider_x = dialog_x + 50
+            relative_x = pos[0] - sound_slider_x
+            self.sound_volume = max(0.0, min(1.0, relative_x / self.slider_width))
+            SoundManager.set_sound_volume(self.sound_volume)
 

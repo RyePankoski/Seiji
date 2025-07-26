@@ -66,6 +66,89 @@ class MenuDrawUtilities:
         if self.menu.show_setup_dialog:
             self._draw_setup_dialog(screen)
 
+        if self.menu.show_rules:  # Add this block
+            self._draw_rules(screen)
+
+        if self.menu.show_settings:  # Add this
+            self._draw_settings(screen)
+
+    def _draw_rules(self, screen):
+        current_width, current_height = self.display_manager.get_dimensions()
+
+        # Draw semi-transparent overlay
+        overlay = pygame.Surface((current_width, current_height))
+        overlay.fill((0, 0, 0))
+        overlay.set_alpha(200)
+        screen.blit(overlay, (0, 0))
+
+        # Scale the rules image to be much larger
+        rules_image = self.menu.rules_image
+
+        # Make it bigger - use 150% of screen width or height, whichever is larger
+        target_width = current_width * 2.5
+        target_height = current_height * 2.5
+
+        # Maintain aspect ratio
+        image_rect = rules_image.get_rect()
+        scale_x = target_width / image_rect.width
+        scale_y = target_height / image_rect.height
+        scale = min(scale_x, scale_y)
+
+        new_width = int(image_rect.width * scale)
+        new_height = int(image_rect.height * scale)
+
+        scaled_image = pygame.transform.scale(rules_image, (new_width, new_height))
+
+        # Calculate scroll bounds
+        max_scroll = max(0, new_height - current_height)
+        self.menu.rules_scroll_y = max(0, min(self.menu.rules_scroll_y, max_scroll))
+
+        # Center horizontally, scroll vertically
+        x = (current_width - new_width) // 2
+        y = -self.menu.rules_scroll_y
+
+        # Create a clipping rect to prevent drawing outside screen
+        clip_rect = pygame.Rect(0, 0, current_width, current_height)
+        screen.set_clip(clip_rect)
+
+        screen.blit(scaled_image, (x, y))
+
+        # Remove clipping
+        screen.set_clip(None)
+
+        # Draw scroll indicator if needed
+        if max_scroll > 0:
+            self._draw_scroll_indicator(screen, current_height, max_scroll)
+
+    # In draw.py - add scroll indicator method to MenuDrawUtilities
+    def _draw_scroll_indicator(self, screen, screen_height, max_scroll):
+        """Draw a scroll bar on the right side"""
+        if max_scroll <= 0:
+            return
+
+        current_width, current_height = self.display_manager.get_dimensions()
+
+        # Scroll bar dimensions
+        bar_width = 10
+        bar_x = current_width - bar_width - 10
+        bar_height = current_height - 20
+        bar_y = 10
+
+        # Background
+        pygame.draw.rect(screen, (50, 50, 50), (bar_x, bar_y, bar_width, bar_height))
+
+        # Thumb
+        thumb_height = max(20, int(bar_height * (current_height / (max_scroll + current_height))))
+        thumb_y = bar_y + int((bar_height - thumb_height) * (self.menu.rules_scroll_y / max_scroll))
+
+        pygame.draw.rect(screen, (150, 150, 150), (bar_x, thumb_y, bar_width, thumb_height))
+
+        # Add scroll instruction text
+        font = pygame.font.Font(None, 24)
+        text = font.render("Scroll to read more", True, (200, 200, 200))
+        text_rect = text.get_rect(centerx=current_width // 2, bottom=current_height - 10)
+        screen.blit(text, text_rect)
+
     def _draw_setup_dialog(self, screen):
         """Draw the setup dialog for board size configuration"""
         current_width, current_height = self.display_manager.get_dimensions()
@@ -168,6 +251,71 @@ class MenuDrawUtilities:
         # Draw input text
         input_text = self.input_font.render(self.menu.ip_input, True, (255, 255, 255))
         screen.blit(input_text, (input_box.x + 5, input_box.y + 10))
+
+    def _draw_settings(self, screen):
+        current_width, current_height = self.display_manager.get_dimensions()
+
+        # Draw semi-transparent overlay
+        overlay = pygame.Surface((current_width, current_height))
+        overlay.fill((0, 0, 0))
+        overlay.set_alpha(200)
+        screen.blit(overlay, (0, 0))
+
+        # Dialog dimensions
+        dialog_width = 500
+        dialog_height = 400
+        dialog_x = (current_width - dialog_width) // 2
+        dialog_y = (current_height - dialog_height) // 2
+
+        # Draw dialog box
+        pygame.draw.rect(screen, (0, 0, 0), (dialog_x, dialog_y, dialog_width, dialog_height))
+        pygame.draw.rect(screen, (255, 255, 255), (dialog_x, dialog_y, dialog_width, dialog_height), 2)
+
+        # Draw title
+        title = self.menu.settings_font.render("SETTINGS", True, (255, 255, 255))
+        title_rect = title.get_rect(centerx=dialog_x + dialog_width // 2, y=dialog_y + 30)
+        screen.blit(title, title_rect)
+
+        # Draw music volume slider
+        self._draw_volume_slider(screen, dialog_x + 50, dialog_y + 120,
+                                 "Music Volume", self.menu.music_volume)
+
+        # Draw sound volume slider
+        self._draw_volume_slider(screen, dialog_x + 50, dialog_y + 220,
+                                 "Sound Volume", self.menu.sound_volume)
+
+        # Draw close instruction
+        close_text = self.button_font.render("Click outside to close", True, (200, 200, 200))
+        close_rect = close_text.get_rect(centerx=dialog_x + dialog_width // 2,
+                                         bottom=dialog_y + dialog_height - 20)
+        screen.blit(close_text, close_rect)
+
+    def _draw_volume_slider(self, screen, x, y, label, volume):
+        """Draw a volume slider with label"""
+        # Draw label
+        label_text = self.menu.settings_font.render(label, True, (255, 255, 255))
+        screen.blit(label_text, (x, y - 40))
+
+        # Draw slider track
+        track_rect = pygame.Rect(x, y, self.menu.slider_width, self.menu.slider_height)
+        pygame.draw.rect(screen, (100, 100, 100), track_rect)
+        pygame.draw.rect(screen, (200, 200, 200), track_rect, 2)
+
+        # Draw slider fill
+        fill_width = int(self.menu.slider_width * volume)
+        if fill_width > 0:
+            fill_rect = pygame.Rect(x, y, fill_width, self.menu.slider_height)
+            pygame.draw.rect(screen, (255, 215, 0), fill_rect)  # Gold fill
+
+        # Draw slider handle
+        handle_x = x + int(self.menu.slider_width * volume) - self.menu.slider_handle_width // 2
+        handle_rect = pygame.Rect(handle_x, y - 5, self.menu.slider_handle_width, self.menu.slider_height + 10)
+        pygame.draw.rect(screen, (255, 255, 255), handle_rect)
+        pygame.draw.rect(screen, (200, 200, 200), handle_rect, 2)
+
+        # Draw volume percentage
+        volume_text = pygame.font.Font(None, 24).render(f"{int(volume * 100)}%", True, (255, 255, 255))
+        screen.blit(volume_text, (x + self.menu.slider_width + 20, y - 5))
 
 
 class GameDrawUtilities:

@@ -24,7 +24,12 @@ class SoundManager:
                 'de_select': pygame.mixer.Sound("Sounds/de-select.mp3"),
                 'enemy_select': pygame.mixer.Sound("Sounds/enemy_select.mp3"),
                 'rematch': pygame.mixer.Sound("Sounds/rematch.mp3"),
-                'to_menu': pygame.mixer.Sound("Sounds/to_menu.mp3")
+                'to_menu': pygame.mixer.Sound("Sounds/to_menu.mp3"),
+                'error': pygame.mixer.Sound("Sounds/error.mp3"),
+                'how_to_play': pygame.mixer.Sound("Sounds/settings.mp3"),
+                'play': pygame.mixer.Sound("Sounds/play.mp3"),
+                'join_game': pygame.mixer.Sound("Sounds/join_game.mp3"),
+                'host_game': pygame.mixer.Sound("Sounds/host_game.mp3")
             }
             self.current_music = None
             SoundManager._initialized = True

@@ -65,8 +65,7 @@ class Game:
         self.board_interaction = False
 
     def handle_input_click(self, pos):
-        """Handle all click input during game state - consolidated game logic"""
-        # Check UI first
+
         ui_action = self.game_ui.handle_event(
             type('Event', (), {'type': pygame.MOUSEBUTTONDOWN, 'pos': pos, 'button': 1})(),
             self.current_state
@@ -78,10 +77,8 @@ class Game:
             self.winner = PLAYER_2 if self.current_player == PLAYER_1 else PLAYER_1
             return
 
-        # Check board/reserve clicks
         board_pos = self.board.get_board_position(pos, self.display)
 
-        # Check if click is in current player's reserve area
         player1_reserve_pos = self.reserve_manager.is_click_in_reserve(PLAYER_1, pos, self.display)
         player2_reserve_pos = self.reserve_manager.is_click_in_reserve(PLAYER_2, pos, self.display)
 
@@ -89,10 +86,8 @@ class Game:
             self.handle_board_click(pos)
         elif (self.current_player == PLAYER_1 and player1_reserve_pos) or \
                 (self.current_player == PLAYER_2 and player2_reserve_pos):
-            # Only handle reserve click if it's the current player's reserve
             self.handle_reserve_click(pos)
         elif not (player1_reserve_pos or player2_reserve_pos):
-            # Only deselect if we didn't click in any reserve area
             self.selected_reserve_piece = None
             self.selected_piece = None
             self.valid_moves = []
@@ -102,8 +97,7 @@ class Game:
         # Always check piece status after any action
         self.board.check_all_pieces_status()
 
-    def handle_postgame_click(self, pos):
-        """Handle clicks during post-game state"""
+    def handle_post_game_click(self, pos):
         ui_action = self.game_ui.handle_event(
             type('Event', (), {'type': pygame.MOUSEBUTTONDOWN, 'pos': pos, 'button': 1})(),
             self.current_state
@@ -111,13 +105,15 @@ class Game:
 
         if ui_action == "menu":
             SoundManager.play_sound('to_menu')
-            self.handle_reset()
+            self.reset()
             self.draw.fade_to_black(self.screen, 2)
             self.current_state = "menu"
+
         elif ui_action == "rematch":
-            SoundManager.play_sound('rematch')
             self.current_state = "game"
-            self.handle_reset()
+            self.reset()
+            SoundManager.play_sound('rematch')
+            SoundManager.handle_music_transition('Sounds/ambient_track.mp3')
 
     def handle_board_click(self, pos):
         result = self.game_action_handler.handle_board_click(
@@ -159,6 +155,8 @@ class Game:
                 self.finish_and_send_game_state()
 
     def handle_reserve_click(self, pos):
+
+        # Retrieve the clicked on reserve piece.
         result = self.game_action_handler.handle_reserve_click(
             pos,
             self.current_player,
@@ -166,17 +164,25 @@ class Game:
             self.reserved_piece_selected
         )
 
+        # Ensure that if its te monarch placement phase, we cannot select anything but the monarch.
+        new_piece = result['new_selected_reserve_piece']
+        if new_piece is not None and new_piece.name != 'monarch' and self.game_phase == 'monarch_placement':
+
+            if self.reserved_piece_selected:
+                self.deselect_all()
+
+            SoundManager.play_sound('error')
+            return
+
         self.selected_reserve_piece = result['new_selected_reserve_piece']
         self.reserved_piece_selected = result['new_reserved_piece_selected']
         self.valid_moves = result['new_valid_moves']
         self.valid_placement_squares = result['new_valid_placement_squares']
 
-        # Play sound if specified
         if result['sound_to_play']:
             SoundManager.play_sound(result['sound_to_play'])
 
     def deselect_all(self):
-        """Centralized deselection logic"""
         self.selected_piece = None
         self.valid_moves = []
         self.valid_placement_squares = []
@@ -189,7 +195,7 @@ class Game:
             self.board.check_all_pieces_status()
             self.network_manager.send_game_state()
 
-    def handle_reset(self):
+    def reset(self):
         self.monarchs_placed = {PLAYER_1: False, PLAYER_2: False}
         self.game_phase = "monarch_placement"
         self.current_state = "game"
@@ -243,14 +249,13 @@ class Game:
                 self.menu.handle_event(event)
                 continue
 
-            if self.current_state == "game":
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if self.current_state == "game":
                     self.handle_input_click(event.pos)
-                continue
+                    continue
 
-            if self.current_state == "post_game":
-                if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
-                    self.handle_postgame_click(event.pos)
+                if self.current_state == "post_game":
+                    self.handle_post_game_click(event.pos)
 
     def run(self):
         while True:
