@@ -57,9 +57,11 @@ class EventHandler:
                 ui_action = self.game.game_ui.handle_event(event, self.game.current_state)
 
                 if ui_action == "menu":
+                    SoundManager.play_sound('to_menu')
                     self.game.handle_reset()
                     self.game.draw.fade_to_black(self.game.screen, 2)
                     self.game.current_state = "menu"
                 elif ui_action == "rematch":
+                    SoundManager.play_sound('rematch')
                     self.game.current_state = "game"
                     self.game.handle_reset()

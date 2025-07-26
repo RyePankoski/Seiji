@@ -22,7 +22,9 @@ class SoundManager:
                 'endgame': pygame.mixer.Sound("Sounds/endgame.mp3"),
                 'select_piece': pygame.mixer.Sound("Sounds/advisor.mp3"),
                 'de_select': pygame.mixer.Sound("Sounds/de-select.mp3"),
-                'enemy_select': pygame.mixer.Sound("Sounds/enemy_select.mp3")
+                'enemy_select': pygame.mixer.Sound("Sounds/enemy_select.mp3"),
+                'rematch': pygame.mixer.Sound("Sounds/rematch.mp3"),
+                'to_menu': pygame.mixer.Sound("Sounds/to_menu.mp3")
             }
             self.current_music = None
             SoundManager._initialized = True

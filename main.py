@@ -12,7 +12,6 @@ from board import Board
 from constants import *
 from menu import Menu
 import pygame
-import sys
 
 
 class Game:
@@ -66,7 +65,6 @@ class Game:
         self.board_interaction = False
 
     def handle_board_click(self, pos):
-
         result = self.game_action_handler.handle_board_click(
             pos,
             self.current_player,
@@ -120,7 +118,7 @@ class Game:
             current_height
         )
 
-        if self.reserved_piece_selected is True and piece == self.selected_reserve_piece:
+        if self.reserved_piece_selected and piece == self.selected_reserve_piece:
             self.deselect()
             self.selected_reserve_piece = None
             return
