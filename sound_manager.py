@@ -44,7 +44,7 @@ class SoundManager:
         return cls._instance
 
     @classmethod
-    def play_sound(cls, sound_name, pitch_variation=0.1):
+    def play_sound(cls, sound_name, pitch_variation=0.05):
         instance = cls.get_instance()
         if sound_name in instance.sounds:
             sound = instance.sounds[sound_name]

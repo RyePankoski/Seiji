@@ -38,6 +38,7 @@ class Board:
         return adjacent_pieces
 
     def handle_status(self, piece, adjacent_pieces):
+
         DEFAULT_MOVEMENTS = {
             "monarch": ((0, 1), (0, -1), (1, 0), (-1, 0), (1, 1), (1, -1), (-1, 1), (-1, -1)),
             "advisor": ((3, 3), (3, -3), (-3, 3), (-3, -3), (2, 2), (2, -2), (-2, 2), (-2, -2), (1, 1), (1, -1),
@@ -142,7 +143,7 @@ class Board:
 
         # Ensure coordinates are within bounds
         if 0 <= board_x < self.size and 0 <= board_y < self.size:
-            return (board_x, board_y)
+            return board_x, board_y
         return None
 
     def place_piece(self, piece, position):
@@ -157,7 +158,6 @@ class Board:
         return True
 
     def remove_piece(self, position):
-        """Remove and return piece at position"""
         x, y = position
         if 0 <= x < self.size and 0 <= y < self.size:
             piece = self.board[y][x]
@@ -172,12 +172,10 @@ class Board:
         return None
 
     def is_valid_position(self, position):
-        """Check if a position is valid on the board"""
         x, y = position
         return 0 <= x < self.size and 0 <= y < self.size
 
     def get_grid_rect(self, display_manager):
-        """Get the board's rectangle in screen coordinates"""
         current_width, current_height = display_manager.get_dimensions()
         desired_board_height = current_height * 0.8
         cell_size = desired_board_height / self.size
@@ -188,6 +186,5 @@ class Board:
         return grid_rect, cell_size
 
     def resize_board(self, new_size):
-        """Resize the board and recreate the array"""
         self.size = new_size
         self.board = [[None for x in range(new_size)] for y in range(new_size)]

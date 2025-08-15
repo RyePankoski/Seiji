@@ -1,7 +1,5 @@
-from movement_patterns import get_valid_placement_squares
 from draw import MenuDrawUtilities, GameDrawUtilities, DrawUtilities
 from sound_manager import SoundManager
-
 from reserve_manager import ReserveManager
 from display_manager import DisplayManager
 from network_manager import NetworkManager
@@ -148,7 +146,6 @@ class Game:
             if result['game_ended']:
                 self.winner = result['winner']
                 self.current_state = "post_game"
-                SoundManager.play_sound('endgame')
                 SoundManager.handle_music_transition('Sounds/victory_theme.mp3')
 
             if result['turn_changed'] or result['action_taken']:
@@ -232,7 +229,6 @@ class Game:
             self.game_drawer.draw_game_over_screen(self.screen, self.winner)
 
     def handle_events(self):
-        """Handle all pygame events"""
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
