@@ -45,15 +45,12 @@ python main.py
 
 This is an active development project. Current limitations include:
 - No standalone executable yet (planned)
-- Documentation is minimal
-- Game balance may need refinement
 
 ## Future Plans
 
 - Package as standalone executable
 - Publish for distribution
 - Enhanced UI and visual polish
-- Additional game modes
 
 ## Contributing
 
